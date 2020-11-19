@@ -1,3 +1,5 @@
+import java.time.Duration
+
 buildscript {
     ext {
         kotlin_version = '1.4.10'
@@ -160,6 +162,7 @@ subprojects {
                 sonatype {
                     username = getPropertyOrCmdArgs(project, "PUB_USER", "u")
                     password = getPropertyOrCmdArgs(project, "PUB_PWD", "p")
+                    clientTimeout = Duration.ofSeconds(120)
                 }
             }
         }
