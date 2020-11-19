@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.labijie.infra.mqts.spring.configuration.MqtsAutoConfiguration,\
+  com.labijie.infra.mqts.spring.configuration.MqtsOptionalAutoConfiguration

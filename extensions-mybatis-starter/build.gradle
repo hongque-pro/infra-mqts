@@ -1,0 +1,35 @@
+//
+//plugins {
+//    id "com.arenagod.gradle.MybatisGenerator"
+//}
+
+configurations {
+    mybatisGenerator
+}
+
+dependencies {
+    api project(":springboot")
+    api "org.mybatis.dynamic-sql:mybatis-dynamic-sql:$mybatis_dynamic_sql_version"
+    api "org.mybatis.spring.boot:mybatis-spring-boot-starter:$mybatis_springboot_version"
+    mybatisGenerator "org.mybatis.generator:mybatis-generator-core:$mybatis_generator_version"
+    mybatisGenerator "com.itfsw:mybatis-generator-plugin:$mybatis_gen_plug_version"
+    mybatisGenerator "mysql:mysql-connector-java:$mysql_version"
+}
+
+task mybatisGenerate  {
+    doLast {
+        ant.properties['propertiesFile'] = file("src/main/mybatis/mybatis-generator.properties").getAbsolutePath()
+        ant.taskdef(
+                name: 'mbgenerator',
+                classname: 'org.mybatis.generator.ant.GeneratorAntTask',
+                classpath: configurations.mybatisGenerator.asPath
+        )
+        ant.mbgenerator(overwrite: true,
+                configfile: 'src/main/mybatis/mybatis-generator-confg.xml', verbose: true) {
+            propertyset {
+                propertyref(name: 'propertiesFile')
+            }
+        }
+    }
+}
+

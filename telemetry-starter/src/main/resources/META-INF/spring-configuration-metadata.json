@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "infra.mqts.tracing.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    }
+  ]
+}

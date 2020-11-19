@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+    <properties url="file:///${propertiesFile}"></properties>
+
+    <context id="context" targetRuntime="MyBatis3Kotlin">
+        <property name="javaFileEncoding" value="UTF-8"/>
+        <property name="beginningDelimiter" value="`"/>
+        <property name="endingDelimiter" value="`"/>
+        <commentGenerator>
+            <!--<property name="suppressAllComments" value="true"/>-->
+            <property name="suppressDate" value="true"/>
+        </commentGenerator>
+
+        <plugin type="com.itfsw.mybatis.generator.plugins.SelectOneByExamplePlugin"/>
+
+        <jdbcConnection userId="root" password="${db_password}" driverClass="${driver}"
+                        connectionURL="${connection}"/>
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+        <javaModelGenerator targetPackage="com.labijie.infra.mqts.mybatis.domain" targetProject="src/main/kotlin">
+            <property name="enableSubPackages" value="false"/>
+            <property
+                    name="trimStrings" value="true"/>
+        </javaModelGenerator>
+        <sqlMapGenerator targetPackage="com.labijie.infra.mqts.mybatis.mapper" targetProject="src/main/resources">
+            <property name="enableSubPackages" value="false"/>
+        </sqlMapGenerator>
+
+        <javaClientGenerator targetPackage="com.labijie.infra.mqts.mybatis.mapper" type="XMLMAPPER"
+                             targetProject="src/main/kotlin">
+            <property name="enableSubPackages" value="false"/>
+        </javaClientGenerator>
+
+        <table tableName="mqts_sources_deleted" domainObjectName="DeletedTransactionSourceModel" delimitIdentifiers="true" delimitAllColumns="true">
+        </table>
+        <table tableName="mqts_sources" domainObjectName="TransactionSourceModel" delimitIdentifiers="true" delimitAllColumns="true">
+        </table>
+        <table tableName="mqts_participants" domainObjectName="TransactionParticipantModel" delimitIdentifiers="true" delimitAllColumns="true">
+        </table>
+        <table tableName="mqts_expired" domainObjectName="TransactionSourceExpiredModel" delimitIdentifiers="true" delimitAllColumns="true">
+        </table>
+    </context>
+</generatorConfiguration>

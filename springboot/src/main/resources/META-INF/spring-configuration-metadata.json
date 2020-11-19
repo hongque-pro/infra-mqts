@@ -1,0 +1,24 @@
+{
+  "group": [
+    {
+      "name": "infra.mqts",
+      "type": "com.labijie.infra.mqts.configuration.MQTransactionConfig"
+    },
+    {
+      "name": "infra.mq"
+    }
+  ],
+  "properties": [
+    {
+      "name": "infra.mqts.maxDataSizeBytes",
+      "type": "java.lang.Integer",
+      "defaultValue": 1048576,
+      "description": "max data size for mqts data"
+    },
+    {
+      "name":"infra.mqts.queues",
+      "type": "java.util.Map<java.util.String,io.xstar.mqts.configuration.QueueConfig>",
+      "description": "message queue properties"
+    }
+  ]
+}

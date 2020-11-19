@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: dummy-source
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/open_test?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+infra:
+  telemetry:
+    tracing:
+      exporter: logging
+      exporter-properties:
+        bootstrap.servers : 192.168.199.238:9092
+  mqts:
+    queues:
+      dummy:
+        server: 192.168.199.238:9092
+
