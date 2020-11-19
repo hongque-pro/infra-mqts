@@ -162,8 +162,6 @@ subprojects {
                 sonatype {
                     username = getPropertyOrCmdArgs(project, "PUB_USER", "u")
                     password = getPropertyOrCmdArgs(project, "PUB_PWD", "p")
-                    packageGroup = rootProject.nexusStaging.packageGroup
-                    stagingProfileId = rootProject.nexusStaging.stagingProfileId
                     connectTimeout = Duration.ofMinutes(15)
                     clientTimeout  = Duration.ofMinutes(15)
                 }
