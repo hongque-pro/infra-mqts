@@ -160,8 +160,6 @@ subprojects {
         nexusPublishing {
             repositories {
                 sonatype {
-                    username = getPropertyOrCmdArgs(project, "PUB_USER", "u")
-                    password = getPropertyOrCmdArgs(project, "PUB_PWD", "p")
                     connectTimeout = Duration.ofMinutes(15)
                     clientTimeout  = Duration.ofMinutes(15)
                 }
@@ -230,5 +228,7 @@ subprojects {
 
 
 nexusStaging {
+    username = getPropertyOrCmdArgs(project, "PUB_USER", "u")
+    password = getPropertyOrCmdArgs(project, "PUB_PWD", "p")
     packageGroup = "com.labijie"
 }
