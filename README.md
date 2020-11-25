@@ -7,7 +7,7 @@
 ![workflow status](https://img.shields.io/github/workflow/status/hongque-pro/infra-mqts/Gradle%20Build%20And%20Release?label=CI%20publish&style=flat-square)
 ![license](https://img.shields.io/github/license/hongque-pro/infra-mqts?style=flat-square)
 
-## MQTS 对比 SAGA 类柔性事务，优势、缺点：
+## MQTS 对比 **SAGA** 类柔性事务，优势、缺点：
 优点：
 
 1. 无需分布式事务协调器，只依赖 MQ，部署简单
@@ -20,6 +20,9 @@
 
 1. 只支持正向事务，即事务无法回滚（业务正确的情况下通过手动重放事务可以应对大多数要求一致性的场景）
 1. 事务无法取消，一旦业务不正确只能手工冲正
+
+**MQTS**语义: 最大努力重试
+**SAGA**语义: 分布式两段提交
 
 
 如果需具有回滚能力的分布式事务，推荐使用 [SEATA](https://github.com/seata/seata)
