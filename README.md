@@ -15,6 +15,10 @@
 1. 系统 B 处理任务后通过MQ或其他传输方式（支持微服务发现调用）对发送应答消息给系统 A
 1. 系统 A 收到应答消息提交事务
 
+## 追踪支持（基于 infra-telemetry）
+> 追踪甘特图可以帮助你更好的理解完整 MQTS 事务流程
+![alt text](https://github.com/endink/endink/blob/master/infra-tracing.PNG?raw=true)
+
 > 自动处理重试、超时死信队列、事务重放等问题
 
 ## 使用方法

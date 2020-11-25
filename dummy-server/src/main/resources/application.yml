@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    - dev
   application:
     name: mqts-dummy
   datasource:

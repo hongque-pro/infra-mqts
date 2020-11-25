@@ -43,15 +43,7 @@ class KafkaProducers(private val applicationName: String?, private val config: M
 
     private fun newProducer(queue: String): KafkaProducer<Long, ByteArray> {
         val conf = config.queues[queue]!!
-        val properties = Properties()
-        conf.properties.filter {
-            it.key.startsWith("producer.")
-        }.forEach {
-            properties[it.key.removePrefix("producer.")] = it.value
-        }
-        if (!conf.server.isBlank()) {
-            properties[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = conf.server
-        }
+        val properties = conf.loadKafkaProducerConfig()
         properties.putIfAbsent(ProducerConfig.ACKS_CONFIG, "0")
         properties.putIfAbsent(ProducerConfig.RETRIES_CONFIG, 1)
         if (!this.applicationName.isNullOrBlank()) {

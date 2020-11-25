@@ -60,15 +60,7 @@ class KafkaConsumers(
 
     private fun createConsumer(queue: String, topics: Collection<String>, handlerType: IKafkaRecordHandler.HandlerType): KafkaConsumer<Long, ByteArray> {
         val conf = config.queues[queue]!!
-        val properties = Properties()
-        conf.properties.filter {
-            it.key.startsWith("consumer.")
-        }.forEach {
-            properties[it.key.removePrefix("consumer.")] = it.value
-        }
-        if (!conf.server.isBlank()) {
-            properties[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = conf.server
-        }
+        val properties = conf.loadKafkaConsumerConfig()
         val type = handlerType.toString().toLowerCase()
         val groupId = if (applicationName.isNullOrBlank()) "mqts-$type" else "$applicationName-for-$type"
         properties[ConsumerConfig.GROUP_ID_CONFIG] = groupId
