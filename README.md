@@ -1,11 +1,29 @@
 # MQTS
 **MQ Transaction service**
 
-基于可靠消息的分布式柔性事务开发包（类似 TCC， 但是比 TCC 更简单），对业务提供异步强一致性（最终一致性）能力
+基于可靠消息的分布式柔性事务开发包（类似 SAGA\TCC， 但是比 SAGA\TCC 更简单），对业务提供异步强一致性（最终一致性）能力
 
 ![maven central version](https://img.shields.io/maven-central/v/com.labijie.infra/mqts-core?style=flat-square)
 ![workflow status](https://img.shields.io/github/workflow/status/hongque-pro/infra-mqts/Gradle%20Build%20And%20Release?label=CI%20publish&style=flat-square)
 ![license](https://img.shields.io/github/license/hongque-pro/infra-mqts?style=flat-square)
+
+## MQTS 对比 SAGA 类柔性事务，优势、缺点：
+优点：
+
+1. 无需分布式事务协调器，只依赖 MQ，部署简单
+1. 全程异步化，对事务传播零知识
+1. 无需编写回滚、冲正代码，逻辑简单可靠
+1. 因为没有回滚动作，不会引入隔离性、悬挂等问题
+
+
+缺点：
+
+1. 只支持正向事务，即事务无法回滚（业务正确的情况下通过手动重放事务可以应对大多数要求一致性的场景）
+1. 事务无法取消，一旦业务不正确只能手工冲正
+
+
+如果需要带回滚功能的事务能力，推荐使用 [SEATA](https://github.com/seata/seata)
+
 
 ## 简单描述
 1. 系统 A 处理任务
