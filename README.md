@@ -22,7 +22,7 @@
 1. 事务无法取消，一旦业务不正确只能手工冲正
 
 
-如果需要带回滚功能的事务能力，推荐使用 [SEATA](https://github.com/seata/seata)
+如果需具有回滚能力的分布式事务，推荐使用 [SEATA](https://github.com/seata/seata)
 
 
 ## 简单描述
@@ -30,12 +30,12 @@
 1. 处理成功后发送消息给消息中间件
 1. 消息投递给系统 B
 1. 系统 B 处理任务
-1. 系统 B 处理任务后通过MQ或其他传输方式（支持微服务发现调用）对发送应答消息给系统 A
-1. 系统 A 收到应答消息提交事务
+1. 系统 B 处理任务后通过MQ或其他传输方式（支持微服务发现调用）发送应答消息给系统 A
+1. 系统 A 收到应答消息提交事务(提交事务代码也可以包含本地数据库事务操作)
 
 ## 追踪链路支持（基于 infra-telemetry）
 
-以下未采集到 elasticsearch apm 示例：
+以下为将追踪信息收集到 elasticsearch apm 示例：
 > 追踪甘特图可以帮助你更好的理解完整 MQTS 事务流程
 
 ![alt text](https://github.com/endink/endink/blob/master/infra-tracing.PNG?raw=true)
