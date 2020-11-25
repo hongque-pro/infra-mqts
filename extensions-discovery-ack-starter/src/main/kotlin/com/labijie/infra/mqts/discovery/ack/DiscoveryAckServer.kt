@@ -12,6 +12,8 @@ import java.net.URI
  */
 class DiscoveryAckServer(private val applicationName:String): IAckServer {
 
+    override val name: String = "discovery ack"
+
     val interceptors:MutableSet<(context: AckRequest) -> Unit> = mutableSetOf()
 
     override fun startup(sources: Collection<TransactionSourceAttribute>) {

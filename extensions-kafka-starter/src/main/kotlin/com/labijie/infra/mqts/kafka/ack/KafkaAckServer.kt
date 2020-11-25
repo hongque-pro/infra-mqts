@@ -1,5 +1,6 @@
 package com.labijie.infra.mqts.kafka.ack
 
+import com.labijie.infra.mqts.MQTransaction
 import com.labijie.infra.mqts.MQTransactionManager
 import com.labijie.infra.mqts.TransactionResult
 import com.labijie.infra.mqts.TransactionSourceAttribute
@@ -11,6 +12,7 @@ import com.labijie.infra.mqts.kafka.KafkaConsumers
 import com.labijie.infra.mqts.kafka.queue.getAckTopicFromTransactionType
 import com.labijie.infra.utils.throwIfNecessary
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.common.record.TimestampType
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationContext
 import java.net.URI
@@ -24,9 +26,11 @@ import java.nio.ByteBuffer
 class KafkaAckServer(private val applicationContext: ApplicationContext,
                      private val consumers: KafkaConsumers,
                      override val ordered: Int = 0) : IAckServer, IKafkaRecordHandler {
-    companion object{
+    companion object {
         private val logger by lazy { LoggerFactory.getLogger(KafkaAckServer::class.java) }
     }
+
+    override val name: String = "kafka"
 
     override fun getAckAddress(): URI {
         return URI("kafka://default")
@@ -53,7 +57,8 @@ class KafkaAckServer(private val applicationContext: ApplicationContext,
     }
 
     override fun handle(queue: String, record: ConsumerRecord<Long, ByteArray>) {
-        this.transactionManager = transactionManager ?: this.applicationContext.getBean(MQTransactionManager::class.java)
+        this.transactionManager = transactionManager
+                ?: this.applicationContext.getBean(MQTransactionManager::class.java)
         val (transactionId, result) = getMessage(record.value())
 
         val request = processInterceptor(transactionId, record)
@@ -63,11 +68,19 @@ class KafkaAckServer(private val applicationContext: ApplicationContext,
 
 
     private fun processInterceptor(transactionId: Long, record: ConsumerRecord<Long, ByteArray>): AckRequest {
-        val request = AckRequest(transactionId,
-                record.topic().removePrefix(Constants.TRANSACTION_TOPIC_PREFIX).removeSuffix(Constants.ACK_TOPIC_STUFFIX),
-                record.headers().map {
-                    it.key() to it.value().toString(Charsets.UTF_8)
-                }.toMap().toMutableMap())
+        val states = record.headers().map {
+            it.key() to it.value().toString(Charsets.UTF_8)
+        }.toMap().toMutableMap()
+
+        if(record.timestampType() != TimestampType.NO_TIMESTAMP_TYPE) {
+            states[MQTransaction.PRODUCE_TIME_STATE_KEY] = record.timestamp().toString()
+            states[MQTransaction.CONSUME_TIME_STATE_KEY] = (record.timestamp() + 1).coerceAtLeast(System.currentTimeMillis()).toString()
+        }
+
+        val transactionType = record.topic().removePrefix(Constants.TRANSACTION_TOPIC_PREFIX).removeSuffix(Constants.ACK_TOPIC_STUFFIX)
+
+        val request = AckRequest(transactionId, transactionType, states)
+
         this.interceptors.forEach {
             try {
                 it.invoke(request)

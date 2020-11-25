@@ -13,8 +13,8 @@ interface ITransactionInitializationContext : ITransactionContext {
 }
 
 interface ITransactionCompletionContext : ITransactionContext {
-    var idempotent:Boolean
-    var exception: Throwable?
+    val idempotent:Boolean
+    val exception: Throwable?
     val hasError: Boolean
         get() = (exception != null)
 }

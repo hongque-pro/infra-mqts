@@ -10,6 +10,8 @@ import kotlin.concurrent.thread
 
 class MemoryTransactionQueue(private val transactionHolder: ITransactionHolder) : ITransactionQueue {
 
+    override val name: String = "memory queue"
+
     private val blockingQueue: BlockingQueue<QueueItem> = LinkedBlockingQueue()
     private val handlers: MutableMap<String, (transaction: MQTransaction) -> Unit> = mutableMapOf()
 

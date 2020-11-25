@@ -1,6 +1,9 @@
 package com.labijie.infra.mqts.tracing
 
+import com.labijie.infra.mqts.MQTransaction
+import com.labijie.infra.mqts.abstractions.IAckServer
 import com.labijie.infra.mqts.abstractions.ITransactionListener
+import com.labijie.infra.mqts.abstractions.ITransactionQueue
 import com.labijie.infra.mqts.context.ITransactionCompletionContext
 import com.labijie.infra.mqts.context.ITransactionContext
 import com.labijie.infra.mqts.context.ITransactionInitializationContext
@@ -11,13 +14,17 @@ import com.labijie.infra.telemetry.tracing.span
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.nowString
 import com.labijie.infra.utils.throwIfNecessary
-import io.opentelemetry.common.AttributeConsumer
-import io.opentelemetry.common.AttributeKey
+import io.opentelemetry.api.common.AttributeConsumer
+import io.opentelemetry.api.common.AttributeKey
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanBuilder
+import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.sdk.trace.ReadableSpan
-import io.opentelemetry.trace.Span
-import io.opentelemetry.trace.Tracer
 import org.slf4j.LoggerFactory
-import java.lang.StringBuilder
+import org.springframework.beans.BeansException
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
+import java.time.Instant
 
 
 /**
@@ -27,7 +34,7 @@ import java.lang.StringBuilder
  */
 class TelemetryTracingListener(private val applicationName: String,
                                private val tracer: Tracer,
-                               networkConfig: NetworkConfig) : ITransactionListener {
+                               networkConfig: NetworkConfig) : ITransactionListener, ApplicationContextAware {
 
     companion object {
 
@@ -36,15 +43,17 @@ class TelemetryTracingListener(private val applicationName: String,
         private const val CONTEXT_ACK_SCOPE_KEY = "infra_telemetry_ack_scope"
         private const val CONTEXT_RETRY_SCOPE_KEY = "infra_telemetry_retry_scope"
         private const val CONTEXT_COMMIT_SCOPE_KEY = "infra_telemetry_commit_scope"
+        private const val CONTEXT_MQ_SCOPE_KEY = "infra_telemetry_mq_scope"
 
         internal val logger = LoggerFactory.getLogger(TelemetryTracingListener::class.java)!!
+
 
 
         private fun writeLog(methodName: String, scope: ScopeAndSpan) {
             if (logger.isDebugEnabled) {
                 val dataSpan = scope.span as? ReadableSpan
                 val spanData = dataSpan?.toSpanData()
-                if(spanData != null) {
+                if (spanData != null) {
                     val builder = StringBuilder().apply {
                         this.appendLine("Debug trace info:")
                         this.appendLine("--==$methodName==--")
@@ -56,42 +65,59 @@ class TelemetryTracingListener(private val applicationName: String,
                         this.appendLine("status: ${spanData.status.canonicalCode}")
                         this.appendLine("attributes: ")
                         val b = this
-                        spanData.attributes.forEach(object : AttributeConsumer{
-                            override fun <T : Any?> consume(key: AttributeKey<T>, value: T) {
+                        spanData.attributes.forEach(object : AttributeConsumer {
+                            override fun <T : Any?> accept(key: AttributeKey<T>, value: T) {
                                 b.appendLine("  ${key.key}=${value}")
                             }
                         })
                     }
                     logger.debug(builder.toString())
-                }else {
+                } else {
                     logger.debug("${System.lineSeparator()}Trace [$methodName] (thread:${Thread.currentThread().id}): ${scope.span}")
                 }
             }
         }
     }
 
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
+        try {
+            val queue = applicationContext.getBean(ITransactionQueue::class.java)
+            this.queueName = queue.name
+
+            val ack = applicationContext.getBean(IAckServer::class.java)
+            this.ackName = ack.name
+
+        }catch (ex: BeansException){
+
+        }
+    }
 
     private fun getSourceSpanName(action: String) = "source: $action"
     private fun getParticipantSpanName(action: String) = "participant: $action"
     private val ipAddress = networkConfig.getIPAddress()
+    private var queueName = "message queue"
+    private var ackName = "ack transport"
 
-    private fun ITransactionContext.getOrNewRootScope(customizer: (Span.Builder.() -> Unit)? = null): ScopeAndSpan =
-            getOrNewScope("mqts:${this.transaction.transactionType}", CONTEXT_ROOT_SCOPE_KEY, customizer)
+    private fun ITransactionContext.getOrNewRootScope(customizer: (SpanBuilder.() -> Unit)? = null): ScopeAndSpan {
+        val spanName = "mqts:${this.transaction.transactionType}"
+        return getOrNewScope(spanName, CONTEXT_ROOT_SCOPE_KEY, customizer)
+    }
 
-    private fun ITransactionContext.newScope(spanName: String, scopeKey: String, customizer: (Span.Builder.() -> Unit)? = null): ScopeAndSpan {
+    private fun ITransactionContext.newScope(spanName: String, scopeKey: String, customizer: (SpanBuilder.() -> Unit)? = null): ScopeAndSpan {
         val span = tracer.spanBuilder(spanName)
                 .init()
                 .also {
-                    if(this.telemetryContext.span != null) {
+                    if (this.telemetryContext.span != null) {
                         it.setParent(this.telemetryContext)
                     }
+                    it.setAttribute("service.name", applicationName)
                     customizer?.invoke(it)
                 }
                 .startSpan().also {
-                   this.withSpan(it)
+                    this.withSpan(it)
                 }
 
-        val s =this.scopeWithSpan(span) {
+        val s = this.scopeWithSpan(span) {
             this.states.remove(scopeKey)
         }
 
@@ -102,7 +128,7 @@ class TelemetryTracingListener(private val applicationName: String,
         }
     }
 
-    private fun ITransactionContext.getOrNewScope(spanName: String, scopeKey: String, customizer: (Span.Builder.() -> Unit)? = null): ScopeAndSpan {
+    private fun ITransactionContext.getOrNewScope(spanName: String, scopeKey: String, customizer: (SpanBuilder.() -> Unit)? = null): ScopeAndSpan {
         val scope = this.states.getOrElse(scopeKey) {
             this.newScope(spanName, scopeKey, customizer)
         }
@@ -112,7 +138,7 @@ class TelemetryTracingListener(private val applicationName: String,
     private val ITransactionContext.rootScope: ScopeAndSpan?
         get() = this.states.getOrDefault(CONTEXT_ROOT_SCOPE_KEY, null) as? ScopeAndSpan
 
-    private fun Span.Builder.init(): Span.Builder {
+    private fun SpanBuilder.init(): SpanBuilder {
         this.setAttribute("event-time", nowString())
         this.setAttribute("application", applicationName)
         this.setAttribute("ip-address", ipAddress)
@@ -151,7 +177,8 @@ class TelemetryTracingListener(private val applicationName: String,
 
     override fun onTransactionExpired(transactionScope: ITransactionContext) {
         var isNew = false
-        val s = transactionScope.getOrNewScope("execution", CONTEXT_EXEC_SCOPE_KEY) {
+        val spanName = getSourceSpanName("expired")
+        val s = transactionScope.getOrNewScope(spanName, CONTEXT_EXEC_SCOPE_KEY) {
             isNew = true
         }.apply {
             writeLog(TelemetryTracingListener::onTransactionExpired.name, this)
@@ -163,9 +190,32 @@ class TelemetryTracingListener(private val applicationName: String,
     }
 
     override fun onTransactionAckReceived(transactionScope: ITransactionContext) {
+        applyMessageQueueSpan(this.ackName, transactionScope)
         val eventName = getSourceSpanName("commit")
         transactionScope.getOrNewScope(eventName, CONTEXT_COMMIT_SCOPE_KEY).apply {
             writeLog(TelemetryTracingListener::onTransactionAckReceived.name, this)
+        }
+    }
+
+    private fun applyMessageQueueSpan(spanName: String, transactionScope: ITransactionContext) {
+        val timeProduced = transactionScope.transaction.states[MQTransaction.PRODUCE_TIME_STATE_KEY]?.toLongOrNull()
+        val timeConsumed = transactionScope.transaction.states[MQTransaction.CONSUME_TIME_STATE_KEY]?.toLongOrNull()
+        //记录 mq 传输时间
+        val span = if (timeProduced != null && timeConsumed != null && timeConsumed > timeProduced) {
+            transactionScope.getOrNewScope(spanName, CONTEXT_MQ_SCOPE_KEY) {
+                val i = Instant.ofEpochMilli(timeProduced)
+                this.setStartTimestamp(i)
+            }.use {
+                val i = Instant.ofEpochMilli(timeConsumed)
+                it.endSpan(i)
+                writeLog(TelemetryTracingListener::onTransactionAckReceived.name, it)
+                Span.wrap(it.span.spanContext)
+            }
+        } else {
+            null
+        }
+        if (span != null) {
+            transactionScope.withSpan(span)
         }
     }
 
@@ -179,6 +229,7 @@ class TelemetryTracingListener(private val applicationName: String,
     }
 
     override fun onTransactionExecuting(transactionScope: ITransactionContext) {
+        applyMessageQueueSpan(this.queueName, transactionScope)
         val eventName = getParticipantSpanName("execution")
         transactionScope.getOrNewScope(eventName, CONTEXT_EXEC_SCOPE_KEY).apply {
             tracer.injectSpan(transactionScope.transaction.states, transactionScope.telemetryContext)
@@ -232,4 +283,5 @@ class TelemetryTracingListener(private val applicationName: String,
             writeLog(TelemetryTracingListener::onTransactionRetryStarted.name, it)
         }
     }
+
 }

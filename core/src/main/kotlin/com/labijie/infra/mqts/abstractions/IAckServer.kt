@@ -7,7 +7,7 @@ import com.labijie.infra.mqts.ack.CallbackKey
 import java.net.URI
 import java.net.URL
 
-interface IAckServer {
+interface IAckServer : INamedComponent {
     @Throws(MQTransactionException::class)
     fun startup(sources:Collection<TransactionSourceAttribute>)
     fun getAckAddress():URI

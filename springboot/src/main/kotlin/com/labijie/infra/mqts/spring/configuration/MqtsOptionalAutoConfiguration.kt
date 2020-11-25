@@ -41,7 +41,7 @@ class MqtsOptionalAutoConfiguration {
     @Bean
     fun memoryAckServer(): MemoryAckServer = MemoryAckServer()
 
-    @ConditionalOnBean(IAckServer::class)
+    @ConditionalOnBean(MemoryAckServer::class)
     @Bean
     fun memoryAckClient(mqTransactionManager: MQTransactionManager): MemoryAckClient = MemoryAckClient(mqTransactionManager)
 }

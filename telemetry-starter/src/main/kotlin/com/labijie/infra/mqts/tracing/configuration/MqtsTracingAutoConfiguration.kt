@@ -7,7 +7,7 @@ import com.labijie.infra.spring.configuration.NetworkConfig
 import com.labijie.infra.spring.configuration.getApplicationName
 import com.labijie.infra.telemetry.configuration.TelemetryAutoConfiguration
 import com.labijie.infra.telemetry.tracing.TracingManager
-import io.opentelemetry.trace.Tracer
+import io.opentelemetry.api.trace.Tracer
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

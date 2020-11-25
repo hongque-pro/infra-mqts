@@ -8,13 +8,14 @@ import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
+import java.lang.RuntimeException
 
 @RestController
 @SpringBootApplication
 @EnableMqts
 class Application{
 
-    @MQTransactionSource("dummy-tran", queue = "dummy", retryIntervalSeconds = [600])
+    @MQTransactionSource("dummy-tran", queue = "dummy", retryIntervalSeconds = [2, 5, 10], timeoutSeconds = 60)
     @GetMapping("/mqts")
     fun startSource(): String {
         return "Transaction has been sent."
@@ -23,6 +24,7 @@ class Application{
     @MQTransactionParticipant("dummy-tran", queue = "dummy")
     fun receivedTran(transactionData: String){
         logger.info("Transaction was received!")
+        throw RuntimeException("This is a dummy error!")
     }
 }
 

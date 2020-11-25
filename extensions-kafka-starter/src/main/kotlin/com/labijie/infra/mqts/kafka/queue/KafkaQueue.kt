@@ -13,6 +13,7 @@ import com.labijie.infra.mqts.scopeWith
 import com.labijie.infra.utils.throwIfNecessary
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.record.TimestampType
 import org.apache.kafka.common.serialization.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
@@ -48,6 +49,7 @@ class KafkaQueue(
     private val stringDeserializer: StringDeserializer = StringDeserializer()
     private val longDeserializer: LongDeserializer = LongDeserializer()
 
+    override val name: String = "kafka"
 
     override fun destroy() {
         isStarted = false
@@ -70,8 +72,10 @@ class KafkaQueue(
                 parentTransactionId = if (parentHeader != null) this.longDeserializer.deserialize(record.topic(), parentHeader.value()) else null
         )
         mqTransaction.version = this.stringDeserializer.deserialize(record.topic(), record.headers().lastHeader("mqts-ver").value())
-        mqTransaction.states[MQTransaction.PRODUCE_TIME_STATE_KEY] = record.timestamp().toString()
-        mqTransaction.states[MQTransaction.CONSUME_TIME_STATE_KEY] = (record.timestamp() + 1).coerceAtLeast(System.currentTimeMillis()).toString()
+        if(record.timestampType() != TimestampType.NO_TIMESTAMP_TYPE) {
+            mqTransaction.states[MQTransaction.PRODUCE_TIME_STATE_KEY] = record.timestamp().toString()
+            mqTransaction.states[MQTransaction.CONSUME_TIME_STATE_KEY] = (record.timestamp() + 1).coerceAtLeast(System.currentTimeMillis()).toString()
+        }
 
         record.headers().forEach {
             if (it.key().startsWith("mqts-sta-")) {

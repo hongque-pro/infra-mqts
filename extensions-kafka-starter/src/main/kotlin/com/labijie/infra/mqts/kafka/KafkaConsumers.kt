@@ -156,11 +156,11 @@ class KafkaConsumers(
             val maxPoolIntervalMills = maxPollIntervalMills(topics)
 
             val consumer = startConsumer(queue.key, topics, handler)
-            var sleepMills = 0L
+            var sleepMills = 100L
             var latestWarnMills = 0L
 
             thread(isDaemon = true, name = threadName) {
-                val size = Math.max(2, workPoolSize)
+                val size = 2.coerceAtLeast(workPoolSize)
                 val atomicLong = AtomicInteger(0)
                 val threadPool = ThreadPoolExecutor(size, size, 0L, TimeUnit.MILLISECONDS,
                         LinkedBlockingQueue(),
@@ -169,7 +169,7 @@ class KafkaConsumers(
                     while (isStarted) {
                         val records = consumer.pollWithoutException()
                         if (!records.isEmpty) {
-                            sleepMills = 0
+                            sleepMills = 100L
                             latestWarnMills = 0
                             records.forEach {
                                 atomicLong.incrementAndGet()
@@ -190,13 +190,13 @@ class KafkaConsumers(
                             this.waitForBacklogs(records, atomicLong, threadPool, handler, maxPoolIntervalMills)
 
                         } else {
-                            val mills = Duration.ofSeconds(10).toMillis()
-                            Thread.sleep(mills)
-                            sleepMills + mills;
 
-                            if ((sleepMills - latestWarnMills) > 600 * 1000) {
-                                latestWarnMills = sleepMills
-                                logger.warn("${handler.type} consumer polled empty content more than ${sleepMills / (60 * 1000)} minutes, maybe it has become a zombie.")
+                            Thread.sleep(sleepMills)
+                            latestWarnMills += sleepMills
+
+                            if ((latestWarnMills) > 600 * 1000) { //闲置超过 10 分钟，开始降低 poll 频率
+                                sleepMills = Duration.ofSeconds(10).toMillis()
+                                logger.warn("${handler.type} consumer polled empty content more than ${Duration.ofMillis(latestWarnMills).toMinutes()} minutes, maybe it has become a zombie.")
                             }
 
                         }

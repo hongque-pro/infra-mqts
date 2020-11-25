@@ -1,5 +1,6 @@
 package com.labijie.infra.mqts.kafka.ack
 
+import com.labijie.infra.mqts.MQTransaction
 import com.labijie.infra.mqts.ack.AckRequestContext
 import com.labijie.infra.mqts.TransactionResult
 import com.labijie.infra.mqts.abstractions.IAckClient
@@ -26,7 +27,7 @@ class KafkaAckClient(private val producers: KafkaProducers) : IAckClient {
                 createResultData(context.transactionId, result))
 
         context.transactionStates.forEach{
-            if(!it.value.isBlank()) {
+            if(!it.value.isBlank() && it.key != MQTransaction.PRODUCE_TIME_STATE_KEY && it.key != MQTransaction.CONSUME_TIME_STATE_KEY) {
                 record.headers().add(it.key, it.value.toByteArray(Charsets.UTF_8))
             }
         }

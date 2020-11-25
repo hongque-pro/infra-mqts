@@ -1,7 +1,8 @@
 package com.labijie.infra.mqts.tracing
 
-import io.opentelemetry.trace.Span
+import io.opentelemetry.api.trace.SpanBuilder
+
 
 interface ITracingSpanProcessor {
-    fun processSpan(builder: Span.Builder)
+    fun processSpan(builder: SpanBuilder)
 }

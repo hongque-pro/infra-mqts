@@ -5,6 +5,8 @@ import com.labijie.infra.mqts.abstractions.IAckServer
 import java.net.URI
 
 class MemoryAckServer : IAckServer {
+    override val name: String = "direct ack"
+
     override fun startup(sources: Collection<TransactionSourceAttribute>) {
     }
 

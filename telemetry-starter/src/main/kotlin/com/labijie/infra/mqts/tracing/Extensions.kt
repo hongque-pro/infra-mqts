@@ -5,12 +5,10 @@ import com.labijie.infra.mqts.context.ITransactionContext
 import com.labijie.infra.telemetry.tracing.ScopeAndSpan
 import com.labijie.infra.telemetry.tracing.propagation.MapGetter
 import com.labijie.infra.telemetry.tracing.span
-import io.grpc.Context
-import io.opentelemetry.OpenTelemetry
-import io.opentelemetry.context.ContextUtils
-import io.opentelemetry.trace.Span
-import io.opentelemetry.trace.StatusCanonicalCode
-import io.opentelemetry.trace.TracingContextUtils
+import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.context.Context
 
 private const val CONTEXT_KEY = "infra_telemetry_context"
 
@@ -22,12 +20,12 @@ val ITransactionContext.telemetryContext: Context
             return states.getOrPut(CONTEXT_KEY, {
                 var context = Context.current()
                 if (context.span == null) {
-                    val propagator = OpenTelemetry.getPropagators().textMapPropagator
-                    var remotingContext = propagator.extract(context, transaction.states, MapGetter)
+                    val propagator = OpenTelemetry.getGlobalPropagators().textMapPropagator
+                    var remotingContext = propagator.extract(context, transaction.states, MapGetter.INSTANCE)
 
                     val parentTransaction = parentTransaction
                     if (remotingContext.span == null && parentTransaction != null) {
-                        remotingContext = propagator.extract(context, parentTransaction.states, MapGetter)
+                        remotingContext = propagator.extract(context, parentTransaction.states, MapGetter.INSTANCE)
                     }
                     if(remotingContext.span != null) {
                         context = remotingContext
@@ -39,21 +37,22 @@ val ITransactionContext.telemetryContext: Context
     }
 
 fun ITransactionContext.withSpan(span: Span) {
-    states[CONTEXT_KEY] = TracingContextUtils.withSpan(span, this.telemetryContext)
+    states[CONTEXT_KEY] = this.telemetryContext.with(span)
 }
 
 fun ITransactionContext.scopeWithSpan(span: Span, closeCallback: (()-> Unit)?): ScopeAndSpan {
-    val ctx = TracingContextUtils.withSpan(span, this.telemetryContext)
-    val s = ContextUtils.withScopedContext(ctx)
+    val ctx = this.telemetryContext.with(span)
+    val s = ctx.makeCurrent()
     return ScopeAndSpan(s, span, closeCallback)
 }
 
 internal fun Span.addCompletionStatus(eventName: String, context: ITransactionCompletionContext){
     this.addEvent(if (context.idempotent) "$eventName: idempotent" else "$eventName: done")
     if(context.hasError){
-        this.setStatus(StatusCanonicalCode.ERROR, context.exception!!.stackTraceToString())
+        this.setStatus(StatusCode.ERROR)
+        this.recordException(context.exception!!)
     }else{
-        this.setStatus(StatusCanonicalCode.OK)
+        this.setStatus(StatusCode.OK)
     }
 }
 
