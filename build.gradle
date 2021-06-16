@@ -3,13 +3,13 @@ import java.time.Duration
 buildscript {
     ext {
         kotlin_version = '1.4.10'
-        infra_commons_version='2.0.1'
+        infra_commons_version='2.1.0'
         infra_telemetry_version='1.0.1'
         slf4j_version='1.7.30'
 
-        spring_boot_version = '2.3.4.RELEASE'
-        spring_cloud_version='Hoxton.SR8'
-        spring_version = '5.2.9.RELEASE'
+        spring_boot_version = '2.4.5'
+        spring_cloud_version='2020.0.2'
+        spring_version = '5.3.6'
 
         kafka_version='2.6.0'
 
@@ -21,7 +21,7 @@ buildscript {
 
         mybatis_generator_version='1.4.0'
         mybatis_dynamic_sql_version='1.2.1'
-        mybatis_springboot_version='2.1.3'
+        mybatis_springboot_version='2.1.4'
         mybatis_gen_plug_version='1.4'
 
         junit_verions = '5.7.0'
@@ -29,8 +29,7 @@ buildscript {
         mockito_version = '1.10.19'
 
         maven_repo= System.getenv("MAVEN_PROXY") //?: 'http://maven.aliyun.com/nexus/content/groups/public/'
-        nexus_staging_version = '0.22.0'
-        nexus_publish_version = '0.4.0'
+        publishing_plugin_version = '1.1.0'
 
         repositories {
             mavenLocal()
@@ -49,10 +48,9 @@ plugins {
     id "org.springframework.boot" version "$spring_boot_version" apply false
     id "org.jetbrains.kotlin.jvm" version "$kotlin_version" apply false
     id "com.arenagod.gradle.MybatisGenerator" version "$mybatis_gen_plug_version" apply false
-    id "io.codearte.nexus-staging" version "$nexus_staging_version"
-    id "de.marcphilipp.nexus-publish" version "$nexus_publish_version" apply false
+    id "io.github.gradle-nexus.publish-plugin" version "$publishing_plugin_version" apply false
 }
-apply plugin: 'io.codearte.nexus-staging'
+apply plugin: 'io.github.gradle-nexus.publish-plugin'
 
 static Boolean  isNotNullOrBlank(Object s){
     return !(s == null || s.toString().trim().length() == 0)
@@ -72,14 +70,13 @@ static getPropertyOrCmdArgs(Project project, String propertyName, String cmdArgN
 
 allprojects {
     group 'com.labijie.infra'
-    version '2.0.1'
+    version '2.1.0'
 
     apply plugin: 'kotlin'
     apply plugin: 'java'
     apply plugin: 'signing'
     apply plugin: 'kotlin-spring'
     apply plugin: 'java-library'
-    apply plugin: 'de.marcphilipp.nexus-publish'
 
     if(!project.name.startsWith("dummy")) {
         apply plugin: 'maven-publish'
@@ -157,14 +154,6 @@ subprojects {
     def s = getPropertyOrCmdArgs(project, "PUB_URL", "s")
 
     if(!project.name.startsWith("dummy")) {
-        nexusPublishing {
-            repositories {
-                sonatype {
-                    connectTimeout = Duration.ofMinutes(15)
-                    clientTimeout  = Duration.ofMinutes(15)
-                }
-            }
-        }
 
         publishing {
             publications {
@@ -211,10 +200,10 @@ subprojects {
             }
 
             repositories {
-                if (isNotNullOrBlank(u) && isNotNullOrBlank(p)) {
+                if (isNotNullOrBlank(u) && isNotNullOrBlank(p) && isNotNullOrBlank(s)) {
                     maven {
-                        name = "OSSRH"
-                        url = s ?: "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+                        name = "nexus"
+                        url = s
                         credentials {
                             username = u
                             password = p
@@ -227,8 +216,13 @@ subprojects {
 }
 
 
-nexusStaging {
-    username = getPropertyOrCmdArgs(project, "PUB_USER", "u")
-    password = getPropertyOrCmdArgs(project, "PUB_PWD", "p")
-    packageGroup = "com.labijie"
+nexusPublishing {
+    repositories {
+        sonatype {
+            def u = getPropertyOrCmdArgs(project, "PUB_USER", "u")
+            def p =getPropertyOrCmdArgs(project, "PUB_PWD", "p")
+            username = u
+            password = p
+        }
+    }
 }
