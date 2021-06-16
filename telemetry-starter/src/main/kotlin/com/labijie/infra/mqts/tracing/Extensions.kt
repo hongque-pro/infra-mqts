@@ -8,6 +8,7 @@ import com.labijie.infra.telemetry.tracing.span
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.context.Context
 
 private const val CONTEXT_KEY = "infra_telemetry_context"
@@ -17,22 +18,22 @@ const val SPAN_TAG_TRANSACTION_ID = "mqts-tran-id"
 val ITransactionContext.telemetryContext: Context
     get() {
         synchronized(this) {
-            return states.getOrPut(CONTEXT_KEY, {
+            return states.getOrPut(CONTEXT_KEY) {
                 var context = Context.current()
                 if (context.span == null) {
-                    val propagator = OpenTelemetry.getGlobalPropagators().textMapPropagator
+                    val propagator = W3CTraceContextPropagator.getInstance()
                     var remotingContext = propagator.extract(context, transaction.states, MapGetter.INSTANCE)
 
                     val parentTransaction = parentTransaction
                     if (remotingContext.span == null && parentTransaction != null) {
                         remotingContext = propagator.extract(context, parentTransaction.states, MapGetter.INSTANCE)
                     }
-                    if(remotingContext.span != null) {
+                    if (remotingContext.span != null) {
                         context = remotingContext
                     }
                 }
                 context
-            }) as Context
+            } as Context
         }
     }
 

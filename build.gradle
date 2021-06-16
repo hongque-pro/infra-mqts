@@ -4,25 +4,21 @@ buildscript {
     ext {
         kotlin_version = '1.4.10'
         infra_commons_version='2.1.0'
-        infra_telemetry_version='1.0.1'
+        infra_telemetry_version='1.1.0'
         slf4j_version='1.7.30'
 
         spring_boot_version = '2.4.5'
         spring_cloud_version='2020.0.2'
         spring_version = '5.3.6'
 
-        kafka_version='2.6.0'
-
-        micrometer_version = '1.6.0'
-        prometheus_version='0.9.0'
-
+        kafka_version='2.8.0'
         kryo_version = '5.0.0'
         mysql_version='8.0.22'
 
         mybatis_generator_version='1.4.0'
-        mybatis_dynamic_sql_version='1.2.1'
-        mybatis_springboot_version='2.1.4'
         mybatis_gen_plug_version='1.4'
+
+        open_telemetry_version='1.1.0'
 
         junit_verions = '5.7.0'
 
@@ -34,7 +30,10 @@ buildscript {
         repositories {
             mavenLocal()
             if(maven_repo != null) {
-                maven { url maven_repo }
+                maven {
+                    allowInsecureProtocol true
+                    url maven_repo
+                }
             }
             mavenCentral()
             maven { url 'https://repo.spring.io/plugins-release' }
@@ -113,11 +112,12 @@ allprojects {
     repositories {
         mavenLocal()
         if(maven_repo != null) {
-            maven { url maven_repo }
+            maven {
+                allowInsecureProtocol true
+                url maven_repo
+            }
         }
         mavenCentral()
-        maven { url 'https://repo.spring.io/plugins-release' }
-        maven { url '"https://plugins.gradle.org/m2/"' }
     }
 
     configurations.all {
@@ -127,6 +127,7 @@ allprojects {
     dependencies {
         implementation platform("org.jetbrains.kotlin:kotlin-bom:${kotlin_version}")
         testImplementation platform("org.junit:junit-bom:$junit_verions")
+        implementation platform("io.opentelemetry:opentelemetry-bom:${open_telemetry_version}")
         implementation platform("org.springframework.boot:spring-boot-dependencies:${spring_boot_version}")
         implementation platform("org.springframework.cloud:spring-cloud-dependencies:${spring_cloud_version}")
 

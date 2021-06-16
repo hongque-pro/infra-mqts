@@ -14,12 +14,10 @@ import com.labijie.infra.telemetry.tracing.span
 import com.labijie.infra.utils.ifNullOrBlank
 import com.labijie.infra.utils.nowString
 import com.labijie.infra.utils.throwIfNecessary
-import io.opentelemetry.api.common.AttributeConsumer
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanBuilder
 import io.opentelemetry.api.trace.Tracer
-import io.opentelemetry.sdk.trace.ReadableSpan
 import org.slf4j.LoggerFactory
 import org.springframework.beans.BeansException
 import org.springframework.context.ApplicationContext
@@ -51,30 +49,30 @@ class TelemetryTracingListener(private val applicationName: String,
 
         private fun writeLog(methodName: String, scope: ScopeAndSpan) {
             if (logger.isDebugEnabled) {
-                val dataSpan = scope.span as? ReadableSpan
-                val spanData = dataSpan?.toSpanData()
-                if (spanData != null) {
-                    val builder = StringBuilder().apply {
-                        this.appendLine("Debug trace info:")
-                        this.appendLine("--==$methodName==--")
-                        this.appendLine("trace id: ${spanData.traceId}")
-                        this.appendLine("span id: ${spanData.spanId}")
-                        this.appendLine("parent span id: ${spanData.parentSpanId.ifNullOrBlank { "<null>" }}")
-                        this.appendLine("span name: ${spanData.name}")
-                        this.appendLine("kind: ${spanData.kind}")
-                        this.appendLine("status: ${spanData.status.canonicalCode}")
-                        this.appendLine("attributes: ")
-                        val b = this
-                        spanData.attributes.forEach(object : AttributeConsumer {
-                            override fun <T : Any?> accept(key: AttributeKey<T>, value: T) {
-                                b.appendLine("  ${key.key}=${value}")
-                            }
-                        })
-                    }
-                    logger.debug(builder.toString())
-                } else {
-                    logger.debug("${System.lineSeparator()}Trace [$methodName] (thread:${Thread.currentThread().id}): ${scope.span}")
-                }
+//                val dataSpan = scope.span as? ReadableSpan
+//                val spanData = dataSpan?.toSpanData()
+//                if (spanData != null) {
+//                    val builder = StringBuilder().apply {
+//                        this.appendLine("Debug trace info:")
+//                        this.appendLine("--==$methodName==--")
+//                        this.appendLine("trace id: ${spanData.traceId}")
+//                        this.appendLine("span id: ${spanData.spanId}")
+//                        this.appendLine("parent span id: ${spanData.parentSpanId.ifNullOrBlank { "<null>" }}")
+//                        this.appendLine("span name: ${spanData.name}")
+//                        this.appendLine("kind: ${spanData.kind}")
+//                        this.appendLine("status: ${spanData.status.canonicalCode}")
+//                        this.appendLine("attributes: ")
+//                        val b = this
+//                        spanData.attributes.forEach(object : AttributeConsumer {
+//                            override fun <T : Any?> accept(key: AttributeKey<T>, value: T) {
+//                                b.appendLine("  ${key.key}=${value}")
+//                            }
+//                        })
+//                    }
+//                    logger.debug(builder.toString())
+//                    return
+//                }
+                logger.debug("${System.lineSeparator()}Trace [$methodName] (thread:${Thread.currentThread().id}): ${scope.span}")
             }
         }
     }
