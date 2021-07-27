@@ -150,6 +150,7 @@ class KafkaConsumers(
             val consumer = startConsumer(queue.key, topics, handler)
             var sleepMills = 100L
             var latestWarnMills = 0L
+            var warned = false
 
             thread(isDaemon = true, name = threadName) {
                 val size = 2.coerceAtLeast(workPoolSize)
@@ -163,6 +164,7 @@ class KafkaConsumers(
                         if (!records.isEmpty) {
                             sleepMills = 100L
                             latestWarnMills = 0
+                            warned = false
                             records.forEach {
                                 atomicLong.incrementAndGet()
                                 threadPool.submit {
@@ -188,7 +190,10 @@ class KafkaConsumers(
 
                             if ((latestWarnMills) > 600 * 1000) { //闲置超过 10 分钟，开始降低 poll 频率
                                 sleepMills = Duration.ofSeconds(10).toMillis()
-                                logger.warn("${handler.type} consumer polled empty content more than ${Duration.ofMillis(latestWarnMills).toMinutes()} minutes, maybe it has become a zombie.")
+                                if (!warned) {
+                                    logger.warn("${handler.type} consumer polled empty content more than ${Duration.ofMillis(latestWarnMills).toMinutes()} minutes, maybe it has become a zombie.")
+                                    warned = true
+                                }
                             }
 
                         }
