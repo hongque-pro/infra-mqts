@@ -2,14 +2,16 @@ package com.labijie.infra.mqts.spring.interceptor
 
 import com.labijie.infra.mqts.*
 import com.labijie.infra.mqts.abstractions.IAckClient
-import org.springframework.transaction.support.TransactionSynchronizationAdapter
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronization.STATUS_COMMITTED
+import org.springframework.transaction.support.TransactionSynchronization.STATUS_ROLLED_BACK
 
 class MQTransactionParticipantSyncAdapter(
         private val transaction: MQTransaction,
         private val ackClient: IAckClient,
         private val mqTransactionManager: MQTransactionManager,
         private val participant: IParticipantInfo)
-    : TransactionSynchronizationAdapter() {
+    : TransactionSynchronization {
 
     var idempotence = false
 
