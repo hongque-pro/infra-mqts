@@ -10,11 +10,11 @@ import java.net.URI
 
 
 fun MQTransaction.isExpired(attribute: TransactionSourceAttribute): Boolean {
-    if(attribute.annotation.timeoutSeconds == Int.MAX_VALUE){
-        return false
-    }
-    val timeExpired = this.timeCreated + (attribute.annotation.timeoutSeconds * 1000)
-    return timeExpired <= System.currentTimeMillis()
+//    if(attribute.annotation.timeoutSeconds == Int.MAX_VALUE){
+//        return false
+//    }
+//    val timeExpired = this.timeCreated + (attribute.annotation.timeoutSeconds * 1000)
+    return this.timeExpired <= System.currentTimeMillis()
 }
 
 fun getNextRetrySeconds(retryCount: Int, tickArray: IntArray): Int {
