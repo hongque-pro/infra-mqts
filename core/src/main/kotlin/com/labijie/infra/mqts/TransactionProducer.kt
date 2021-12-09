@@ -7,7 +7,6 @@ import io.netty.util.Timeout
 import io.netty.util.Timer
 import io.netty.util.TimerTask
 import org.slf4j.LoggerFactory
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
 
 /**
@@ -34,7 +33,7 @@ class TransactionProducer(
         if (!context.isCancelled) {
             //可能 ACK 和 source 不在同一个服务器，多查询一次，防止多余的重试
             if (mqTransactionManager.isTransactionExisted(context.transaction.transactionId)) {
-                if (!context.transaction.isExpired(context.source)) {
+                if (!context.transaction.isExpired()) {
                     val scopeContext = TransactionContext(context.transaction.copy()).also { ctx ->
                         this.context.rootStates.forEach { (k, v) -> ctx.states[k] = v }
                     }
