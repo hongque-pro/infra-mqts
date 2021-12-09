@@ -34,8 +34,7 @@ class MQTransactionManager constructor(
         private val instanceFactory: IInstanceFactory = SimpleInstanceFactory(),
         private val transactionHolder: ITransactionHolder = DefaultTransactionHolder(),
         private val mq: ITransactionQueue = MemoryTransactionQueue(transactionHolder),
-        private val host: String = "",
-        val isDevelopment: Boolean = false) {
+        private val host: String = "") {
 
     val transactionListeners = TransactionListeners()
 
@@ -59,7 +58,7 @@ class MQTransactionManager constructor(
         val s = System.getSecurityManager()
         val group = if (s != null) s.threadGroup else Thread.currentThread().threadGroup
 
-        this.retryTimer = HashedWheelTimer(ThreadFactory { r ->
+        this.retryTimer = HashedWheelTimer({ r ->
             Thread(group, r,
                     "mqts-retry-${retryThreadCount.incrementAndGet()}")
                     .apply {
@@ -174,15 +173,15 @@ class MQTransactionManager constructor(
 
     fun recoveryTransactions(ackServer: IAckServer): RecoveryResult {
         try {
-            var recovered: Int = 0
-            var expired: Int = 0
+            var recovered = 0
+            var expired = 0
             val tran = repository.getAvailable()
             tran.forEach {
                 //如果没有过期
                 val sourceAttribute = getTransactionAttribute(it.transactionType, throwIfNotFound = false)
                 if (sourceAttribute != null) {
                     val scopeContext = TransactionContext(it)
-                    if (!it.isExpired(sourceAttribute)) {
+                    if (!it.isExpired()) {
                         this.beginTransaction(ackServer, scopeContext, isReload = true)
                         recovered ++
                     } else {
@@ -232,7 +231,7 @@ class MQTransactionManager constructor(
                                         throw MQTransactionException("Transaction participant method need at least one parameter.")
                                     }
                                     val dataType = (it.method.parameters[1].type.classifier as KClass<out Any>)
-                                    val data: Any? = try {
+                                    val data: Any = try {
                                         this.dataSerializer.deserialize(mqt.data!!, dataType)
                                     } catch (ex: Throwable) {
                                         scopeContext.exception = ex

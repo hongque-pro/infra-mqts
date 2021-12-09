@@ -1,15 +1,9 @@
 package com.labijie.infra.mqts
 
 import com.labijie.infra.mqts.abstractions.ITransactionHolder
-import com.labijie.infra.mqts.ack.AckRequest
-import com.labijie.infra.mqts.ack.AckRequestContext
-import com.labijie.infra.mqts.context.TransactionContext
-import com.labijie.infra.mqts.impl.DefaultTransactionHolder
-import com.labijie.infra.utils.throwIfNecessary
-import java.net.URI
 
 
-fun MQTransaction.isExpired(attribute: TransactionSourceAttribute): Boolean {
+fun MQTransaction.isExpired(): Boolean {
 //    if(attribute.annotation.timeoutSeconds == Int.MAX_VALUE){
 //        return false
 //    }
