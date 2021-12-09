@@ -14,8 +14,9 @@ allprojects {
             kotlinVersion = Versions.kotlin
             useMavenProxy = false
         }
-    }
 
+        useNexusPublish()
+    }
 }
 subprojects {
     if(!project.name.startsWith("dummy")){
