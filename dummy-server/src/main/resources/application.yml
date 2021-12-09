@@ -11,11 +11,11 @@ spring:
 infra:
   telemetry:
     tracing:
-      exporter: kafka
-      exporter-properties:
-        bootstrap.servers: 192.168.199.238:9092
+      exporter:
+        provider: kafka
+        properties:
+          bootstrap.servers: 192.168.199.238:9092
   mqts:
     queues:
       dummy:
         server: 192.168.199.238:9092
-
