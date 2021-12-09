@@ -153,7 +153,7 @@ class KafkaConsumers(
             var warned = false
 
             thread(isDaemon = true, name = threadName) {
-                val size = workPoolSize
+                val size = workPoolSize.coerceAtLeast(1)
                 val atomicLong = AtomicInteger(0)
                 val threadPool = ThreadPoolExecutor(size, size, 0L, TimeUnit.MILLISECONDS,
                         LinkedBlockingQueue(),
