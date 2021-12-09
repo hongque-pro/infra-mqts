@@ -21,7 +21,7 @@ import org.springframework.transaction.support.TransactionTemplate
  * @date 2018-12-26
  */
 @ConditionalOnMqts
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(MqtsAutoConfiguration::class)
 @AutoConfigureBefore(MqtsOptionalAutoConfiguration::class)
 @MapperScan("com.labijie.infra.mqts.mybatis.mapper")

@@ -35,7 +35,7 @@ import org.springframework.core.env.Environment
  * @author Anders Xiao
  * @date 2018-10-19
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnMqts
 @AutoConfigureAfter(MqtsAutoConfiguration::class)
 @AutoConfigureBefore(MqtsOptionalAutoConfiguration::class)
@@ -83,7 +83,7 @@ class MqtsKafkaAutoConfiguration {
         return KafkaStartup(consumers)
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "infra.mqts.kafka", name = ["ack-enabled"], matchIfMissing = true)
     protected class MqtsKafkaAckAutoConfiguration {
         @Bean
@@ -98,7 +98,7 @@ class MqtsKafkaAutoConfiguration {
     }
 
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(prefix = "infra.mqts.kafka", name = ["redo-enabled"], matchIfMissing = true)
     protected class MqtsKafkaRedoSupportedAutoConfiguration {
         @Bean

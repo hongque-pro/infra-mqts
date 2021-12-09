@@ -22,7 +22,7 @@ import org.springframework.core.env.Environment
  */
 @AutoConfigureAfter(TelemetryAutoConfiguration::class, Environment::class, CommonsAutoConfiguration ::class)
 @ConditionalOnMqts
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class MqtsTracingAutoConfiguration {
     @Bean
     @ConditionalOnBean(TracingManager::class)

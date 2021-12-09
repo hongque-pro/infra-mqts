@@ -17,7 +17,6 @@ import com.labijie.infra.mqts.spring.startup.RedoSupportedStartup
 import com.labijie.infra.mqts.spring.startup.TransactionRecoveryStartup
 import com.labijie.infra.spring.configuration.CommonsAutoConfiguration
 import com.labijie.infra.spring.configuration.NetworkConfig
-import com.labijie.infra.utils.Constants
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -26,7 +25,6 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Role
-import org.springframework.core.env.Environment
 
 @ConditionalOnMqts
 @AutoConfigureAfter(CommonsAutoConfiguration::class)
@@ -55,9 +53,7 @@ class MqtsAutoConfiguration {
                              instanceFactory: IInstanceFactory,
                              queue: ITransactionQueue,
                              repository: ITransactionRepository,
-                             environment: Environment,
                              networkConfig: NetworkConfig): MQTransactionManager {
-        val isDevelopment = environment.activeProfiles.contains(Constants.LocalProfile) || environment.activeProfiles.contains(Constants.DevelopmentProfile)
         return MQTransactionManager(idempotence,
                 repository,
                 dataSerializer,
@@ -66,8 +62,7 @@ class MqtsAutoConfiguration {
                 instanceFactory,
                 transactionAccessor,
                 queue,
-                networkConfig.getIPAddress(),
-                isDevelopment)
+                networkConfig.getIPAddress())
     }
 
     @Bean

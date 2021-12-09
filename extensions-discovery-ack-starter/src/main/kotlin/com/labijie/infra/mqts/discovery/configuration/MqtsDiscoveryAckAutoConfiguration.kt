@@ -25,7 +25,7 @@ import org.springframework.core.env.Environment
  * @author Anders Xiao
  * @date 2019-03-09
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnMqts
 @AutoConfigureAfter(MqtsAutoConfiguration::class)
 @AutoConfigureBefore(MqtsOptionalAutoConfiguration::class)
