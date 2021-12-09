@@ -21,7 +21,7 @@ private fun QueueConfig.loadConfig(prefix: String, configKeys: Set<String>): Pro
             }
         }
     }
-    if (!this.server.isBlank()) {
+    if (this.server.isNotBlank()) {
         properties[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = this.server
     }
    return properties

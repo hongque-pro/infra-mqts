@@ -5,6 +5,7 @@ import com.labijie.infra.mqts.abstractions.IAckServer
 import com.labijie.infra.mqts.context.TransactionContext
 import com.labijie.infra.mqts.kafka.IKafkaRecordHandler
 import com.labijie.infra.mqts.kafka.queue.getTransactionTypeFromRedoTopic
+import com.labijie.infra.utils.toLong
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 
@@ -25,7 +26,7 @@ class TransactionRedoHandler(
 
     override fun handle(queue: String, record: ConsumerRecord<Long, ByteArray>) {
         val transactionType = getTransactionTypeFromRedoTopic(record.topic())
-        val transactionId = LongConverter.readLong(record.value())
+        val transactionId = record.value().toLong()
 
         val transaction = this.transactionManager.recoverExpiredTransaction(transactionId, transactionType)
         if (transaction == null) {

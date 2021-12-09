@@ -1,7 +1,0 @@
-dependencies {
-    api project(":core")
-    api "org.springframework.boot:spring-boot-starter:$spring_boot_version"
-    api "org.springframework:spring-tx:$spring_version"
-    api "com.labijie.infra:commons-core-starter:$infra_commons_version"
-    api "org.springframework.boot:spring-boot-starter-aop:$spring_boot_version"
-}

@@ -1,19 +1,19 @@
+server:
+  port: 9898
 spring:
-  profiles:
-    - dev
-  application:
-    name: mqts-dummy
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/open_test?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: 123456
+  application:
+    name: dummy
 infra:
   telemetry:
     tracing:
       exporter: kafka
       exporter-properties:
-        bootstrap.servers : 192.168.199.238:9092
+        bootstrap.servers: 192.168.199.238:9092
   mqts:
     queues:
       dummy:

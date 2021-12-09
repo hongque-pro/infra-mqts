@@ -1,11 +1,11 @@
 package com.labijie.infra.mqts.spring.configuration
 
 import com.labijie.infra.IIdGenerator
-import com.labijie.infra.mqts.impl.DefaultTransactionHolder
-import com.labijie.infra.mqts.impl.JacksonDataSerializer
 import com.labijie.infra.mqts.MQTransactionManager
 import com.labijie.infra.mqts.abstractions.*
 import com.labijie.infra.mqts.configuration.MQTransactionConfig
+import com.labijie.infra.mqts.impl.DefaultTransactionHolder
+import com.labijie.infra.mqts.impl.JacksonDataSerializer
 import com.labijie.infra.mqts.spring.MQTransactionApplicationListener
 import com.labijie.infra.mqts.spring.SpringInstanceFactory
 import com.labijie.infra.mqts.spring.condition.ConditionalOnMqts
@@ -28,10 +28,9 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Role
 import org.springframework.core.env.Environment
 
-
 @ConditionalOnMqts
 @AutoConfigureAfter(CommonsAutoConfiguration::class)
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class MqtsAutoConfiguration {
 
     @ConfigurationProperties("infra.mqts")
@@ -39,6 +38,7 @@ class MqtsAutoConfiguration {
     fun mqTransactionConfig(): MQTransactionConfig{
         return MQTransactionConfig()
     }
+
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     @ConditionalOnMissingBean(IInstanceFactory::class)
@@ -98,7 +98,7 @@ class MqtsAutoConfiguration {
         return MqtsAnnotationProcessor(config)
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @AutoConfigureAfter(MqtsAutoConfiguration::class)
     protected class CoreStartupAutoConfiguration {
 

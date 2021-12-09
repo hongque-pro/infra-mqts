@@ -1,5 +1,4 @@
 dependencies{
-    api project(":springboot")
-    api "org.apache.kafka:kafka-clients:$kafka_version"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core"
+    api(project(":springboot"))
+    api("org.apache.kafka:kafka-clients")
 }

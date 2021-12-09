@@ -1,8 +1,6 @@
 package com.labijie.infra.mqts.kafka
 
 import com.labijie.infra.mqts.configuration.MQTransactionConfig
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.KafkaException
@@ -69,9 +67,7 @@ class KafkaProducers(private val applicationName: String?, private val config: M
         }
         //就算键已经存在也可以会调用函数创建出新的 producer，通过引用比较销毁创建出的无用的 producer
         if (newProducer !== null && newProducer !== p) {
-            GlobalScope.launch {
-                closeProducer(newProducer)
-            }
+            closeProducer(newProducer)
         }
         return p
     }

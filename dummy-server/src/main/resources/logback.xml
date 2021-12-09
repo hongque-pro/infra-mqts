@@ -13,7 +13,7 @@
     <logger name="com.labijie.infra.mqts.tracing" level="DEBUG" />
     <logger name="com.labijie.infra.mqts" level="DEBUG" />
 
-    <root level="WARN">
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

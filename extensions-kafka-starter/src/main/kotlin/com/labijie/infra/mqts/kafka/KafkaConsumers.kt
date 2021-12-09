@@ -61,7 +61,7 @@ class KafkaConsumers(
     private fun createConsumer(queue: String, topics: Collection<String>, handlerType: IKafkaRecordHandler.HandlerType): KafkaConsumer<Long, ByteArray> {
         val conf = config.queues[queue]!!
         val properties = conf.loadKafkaConsumerConfig()
-        val type = handlerType.toString().toLowerCase()
+        val type = handlerType.toString().lowercase()
         val groupId = if (applicationName.isNullOrBlank()) "mqts-$type" else "$applicationName-for-$type"
         properties[ConsumerConfig.GROUP_ID_CONFIG] = groupId
         properties[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
@@ -157,7 +157,7 @@ class KafkaConsumers(
                 val atomicLong = AtomicInteger(0)
                 val threadPool = ThreadPoolExecutor(size, size, 0L, TimeUnit.MILLISECONDS,
                         LinkedBlockingQueue(),
-                        NamedThreadFactory(isDaemon = false) { i -> "mqts-${handler.type.toString().toLowerCase()}-handling-$i" })
+                        NamedThreadFactory(isDaemon = false) { i -> "mqts-${handler.type.toString().lowercase()}-handling-$i" })
                 try {
                     while (isStarted) {
                         val records = consumer.pollWithoutException()
@@ -245,10 +245,10 @@ class KafkaConsumers(
                 if (sleepingMills - latestOutput >= (60 * 1000)) {
                     latestOutput = sleepingMills
                     if (logger.isWarnEnabled) {
-                        logger.warn("Too many mqts ${handler.type.toString().toLowerCase()} message backlogs waiting for consuming  has been more than ${sleepingMills / (60 * 1000L)} minutes. " + System.lineSeparator() +
+                        logger.warn("Too many mqts ${handler.type.toString().lowercase()} message backlogs waiting for consuming  has been more than ${sleepingMills / (60 * 1000L)} minutes. " + System.lineSeparator() +
                                 "backlogs: ${backlogs.get()}" + System.lineSeparator() +
                                 "polled count:${records.count()}" + System.lineSeparator() +
-                                "consumer type: ${type.toLowerCase()}" + System.lineSeparator() +
+                                "consumer type: ${type.lowercase()}" + System.lineSeparator() +
                                 "active threads: ${threadPool.activeCount}" + System.lineSeparator() +
                                 "work pool size: ${threadPool.maximumPoolSize}" + System.lineSeparator() +
                                 "max poll interval: ${maxPoolIntervalMills}ms " + System.lineSeparator())

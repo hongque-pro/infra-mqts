@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration
  * @date 2018-08-10
  */
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class MqtsRunnerAutoConfiguration {
     @Bean
     fun mqTransactionRunner(): CommandLineRunner {

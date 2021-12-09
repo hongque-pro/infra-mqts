@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Configuration
 @ConditionalOnMqts
 @AutoConfigureAfter(MQTransactionManager::class)
 @AutoConfigureOrder(Int.MAX_VALUE)
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class MqtsOptionalAutoConfiguration {
 
     @ConditionalOnMissingBean(ITransactionRedoSupported::class)

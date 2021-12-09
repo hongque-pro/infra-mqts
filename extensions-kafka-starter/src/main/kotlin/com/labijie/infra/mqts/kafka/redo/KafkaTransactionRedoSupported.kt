@@ -5,6 +5,7 @@ import com.labijie.infra.mqts.abstractions.ITransactionRedoSupported
 import com.labijie.infra.mqts.kafka.KafkaConsumers
 import com.labijie.infra.mqts.kafka.KafkaProducers
 import com.labijie.infra.mqts.kafka.queue.getRedoTopicFromTransactionType
+import com.labijie.infra.utils.toByteArray
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.LongSerializer
 
@@ -15,7 +16,6 @@ import org.apache.kafka.common.serialization.LongSerializer
  */
 class KafkaTransactionRedoSupported(private val producers: KafkaProducers, private val consumers: KafkaConsumers) : ITransactionRedoSupported {
 
-
     override fun start(transactionSources: Iterable<TransactionSourceAttribute>) {
         transactionSources.forEach {
             val redoTopic = getRedoTopicFromTransactionType(it.annotation.type)
@@ -25,7 +25,7 @@ class KafkaTransactionRedoSupported(private val producers: KafkaProducers, priva
 
     override fun redoTransaction(queue:String, transactionId: Long, transactionType: String) {
         val topic = getRedoTopicFromTransactionType(transactionType)
-        val record = ProducerRecord<Long?, ByteArray>(topic, null, LongConverter.writeLong(transactionId))
+        val record = ProducerRecord<Long, ByteArray>(topic, null, transactionId.toByteArray())
         this.producers.get(queue).send(record)
     }
 }

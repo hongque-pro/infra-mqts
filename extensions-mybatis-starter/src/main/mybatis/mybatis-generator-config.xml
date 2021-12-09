@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE generatorConfiguration
-        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+<!DOCTYPE generatorConfiguration PUBLIC
+        "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 <generatorConfiguration>
     <properties url="file:///${propertiesFile}"></properties>
@@ -13,8 +13,6 @@
             <!--<property name="suppressAllComments" value="true"/>-->
             <property name="suppressDate" value="true"/>
         </commentGenerator>
-
-        <plugin type="com.itfsw.mybatis.generator.plugins.SelectOneByExamplePlugin"/>
 
         <jdbcConnection userId="root" password="${db_password}" driverClass="${driver}"
                         connectionURL="${connection}"/>
