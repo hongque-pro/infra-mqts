@@ -102,8 +102,8 @@ class KafkaConsumers(
                 queueTopics.forEach { queue ->
 
                     val queueConfig = config.queues.getOrDefault(queue.key, null)
-                    val pntPoolSize = queueConfig?.properties?.getOrDefault(Constants.PARTICIPANT_POOL_SIZE, (Runtime.getRuntime().availableProcessors() * 2).toString()) as? String
-                    val ackPoolSize = queueConfig?.properties?.getOrDefault(Constants.ACK_POOL_SIZE, (Runtime.getRuntime().availableProcessors()).toString()) as? String
+                    val pntPoolSize = queueConfig?.properties?.getOrDefault(Constants.PARTICIPANT_POOL_SIZE, (Runtime.getRuntime().availableProcessors() * 2).toString())?.toString()
+                    val ackPoolSize = queueConfig?.properties?.getOrDefault(Constants.ACK_POOL_SIZE, (Runtime.getRuntime().availableProcessors()).toString())?.toString()
 
                     val pps = try {
                         pntPoolSize?.toInt()
@@ -153,7 +153,7 @@ class KafkaConsumers(
             var warned = false
 
             thread(isDaemon = true, name = threadName) {
-                val size = 2.coerceAtLeast(workPoolSize)
+                val size = workPoolSize
                 val atomicLong = AtomicInteger(0)
                 val threadPool = ThreadPoolExecutor(size, size, 0L, TimeUnit.MILLISECONDS,
                         LinkedBlockingQueue(),
